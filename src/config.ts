@@ -14,15 +14,29 @@ export function loadConfig(): Config {
     CONFLUENCE_PAT: process.env.CONFLUENCE_PAT,
   };
 
-  const missing = Object.entries(vars)
-    .filter(([, value]) => !value)
+  // Log independent status for each service
+  const jiraMissing = Object.entries(vars)
+    .filter(([key, value]) => key.startsWith("JIRA_") && !value)
     .map(([key]) => key);
 
-  if (missing.length > 0) {
+  const confluenceMissing = Object.entries(vars)
+    .filter(([key, value]) => key.startsWith("CONFLUENCE_") && !value)
+    .map(([key]) => key);
+
+  if (jiraMissing.length > 0) {
     console.warn(
-      `[WARNING] Missing environment variables: ${missing.join(", ")}. ` +
-      `Server will start but affected tools will return errors when called.`
+      `[JIRA] ⚠ Disabled — missing: ${jiraMissing.join(", ")}. Jira tools will return errors when called.`
     );
+  } else {
+    console.log(`[JIRA] ✓ Enabled — ${vars.JIRA_BASE_URL}`);
+  }
+
+  if (confluenceMissing.length > 0) {
+    console.warn(
+      `[CONFLUENCE] ⚠ Disabled — missing: ${confluenceMissing.join(", ")}. Confluence tools will return errors when called.`
+    );
+  } else {
+    console.log(`[CONFLUENCE] ✓ Enabled — ${vars.CONFLUENCE_BASE_URL}`);
   }
 
   return {

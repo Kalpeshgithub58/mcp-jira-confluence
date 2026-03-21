@@ -222,19 +222,59 @@ Add to your MCP configuration:
 
 ## ⚙ Configuration Reference
 
+### Independent Services
+
+**Jira and Confluence are fully independent.** You can use one without the other. If one token expires or is missing, the other service continues working normally.
+
+| Scenario | What happens |
+|----------|-------------|
+| Only Jira configured | ✅ Jira tools work · Confluence tools return "not configured" message |
+| Only Confluence configured | ✅ Confluence tools work · Jira tools return "not configured" message |
+| Both configured | ✅ All tools work |
+| Jira token expires | ❌ Jira tools return auth error · ✅ Confluence tools unaffected |
+| Confluence token expires | ✅ Jira tools unaffected · ❌ Confluence tools return auth error |
+
 ### Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `JIRA_BASE_URL` | Yes | Your Jira instance URL (e.g., `https://jira.yourcompany.com`) |
-| `JIRA_PAT` | Yes | Jira Personal Access Token |
-| `CONFLUENCE_BASE_URL` | Yes | Your Confluence instance URL (e.g., `https://confluence.yourcompany.com`) |
-| `CONFLUENCE_PAT` | Yes | Confluence Personal Access Token |
+| `JIRA_BASE_URL` | For Jira tools | Your Jira instance URL (e.g., `https://jira.yourcompany.com`) |
+| `JIRA_PAT` | For Jira tools | Jira Personal Access Token |
+| `CONFLUENCE_BASE_URL` | For Confluence tools | Your Confluence instance URL (e.g., `https://confluence.yourcompany.com`) |
+| `CONFLUENCE_PAT` | For Confluence tools | Confluence Personal Access Token |
 | `PORT` | No | Server port (default: `3000`) |
+
+### Usage Examples
+
+**Jira only:**
+```bash
+docker run -d -p 3000:3000 \
+  -e JIRA_BASE_URL=https://jira.yourcompany.com \
+  -e JIRA_PAT=your_jira_token \
+  agentcraftai/mcp-jira-confluence
+```
+
+**Confluence only:**
+```bash
+docker run -d -p 3000:3000 \
+  -e CONFLUENCE_BASE_URL=https://confluence.yourcompany.com \
+  -e CONFLUENCE_PAT=your_confluence_token \
+  agentcraftai/mcp-jira-confluence
+```
+
+**Both:**
+```bash
+docker run -d -p 3000:3000 \
+  -e JIRA_BASE_URL=https://jira.yourcompany.com \
+  -e JIRA_PAT=your_jira_token \
+  -e CONFLUENCE_BASE_URL=https://confluence.yourcompany.com \
+  -e CONFLUENCE_PAT=your_confluence_token \
+  agentcraftai/mcp-jira-confluence
+```
 
 ### Using Docker Compose
 
-Create a `.env` file:
+Create a `.env` file (include only the services you need):
 
 ```env
 JIRA_BASE_URL=https://jira.yourcompany.com
