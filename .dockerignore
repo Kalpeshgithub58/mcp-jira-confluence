@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.gitignore
+*.md
+.env
+.dockerignore
+docker-compose.yml
+mcp_config.json
