@@ -66,7 +66,13 @@ You (in editor)              MCP Server                Jira / Confluence
 
 ### Step 1: Pull and Run
 
+You can find the official image on [Docker Hub](https://hub.docker.com/r/agentcraftai/mcp-jira-confluence).
+
 ```bash
+# Pull the latest image
+docker pull agentcraftai/mcp-jira-confluence
+
+# Run the container
 docker run -d \
   --name mcp-jira-confluence \
   -p 3000:3000 \
