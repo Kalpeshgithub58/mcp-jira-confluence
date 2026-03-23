@@ -204,19 +204,18 @@ Add to your MCP settings:
 
 ### Windsurf
 
-Add to your MCP configuration:
+Windsurf uses a **different config format** — edit `%USERPROFILE%\.codeium\windsurf\mcp_config.json`:
 ```json
 {
-  "servers": [
-    {
-      "name": "jira-confluence",
-      "url": "http://localhost:3000/mcp"
+  "mcpServers": {
+    "jira-confluence": {
+      "serverUrl": "http://localhost:3000/sse"
     }
-  ]
+  }
 }
 ```
 
-> **Note:** The MCP URL is always `http://localhost:3000/mcp` — not just the base URL.
+> **⚠️ Important:** Windsurf uses `mcpServers` (object), `serverUrl`, and the `/sse` endpoint. Other editors use `servers` (array), `url`, and the `/mcp` endpoint. Always use `http://` — NOT `https://`.
 
 ---
 
@@ -342,10 +341,10 @@ docker build -t mcp-jira-confluence .
 |-----------|--------|
 | **Runtime** | Node.js 18 (Alpine) |
 | **Language** | TypeScript |
-| **MCP Transport** | Streamable HTTP via `@modelcontextprotocol/sdk` |
+| **MCP Transport** | Streamable HTTP (`/mcp`) + Legacy SSE (`/sse`) for backward compatibility |
 | **HTTP Framework** | Express |
 | **API Client** | Axios |
-| **Endpoints** | `POST /mcp` (JSON-RPC), `GET /mcp` (SSE), `DELETE /mcp` (session), `GET /health` |
+| **Endpoints** | `POST /mcp`, `GET /mcp`, `DELETE /mcp` (Streamable HTTP) · `GET /sse`, `POST /messages` (Legacy SSE) · `GET /health` |
 
 ### Key Features
 
