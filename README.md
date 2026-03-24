@@ -130,6 +130,10 @@ Open your AI editor and ask:
 | `getMyTickets` | Fetch issues assigned to you, updated in the last N days | `{ "lastNDays": 15 }` |
 | `searchJira` | Search using any JQL query | `{ "jql": "project = PROJ AND status = Open" }` |
 | `getIssueDetails` | Get full details of a specific issue | `{ "issueKey": "PROJ-123" }` |
+| `createIssue` | Create a new Jira issue (epic, story, task, bug) | `{ "projectKey": "PROJ", "summary": "Fix auth", "description": "...", "issueType": "Bug" }` |
+| `addComment` | Add a comment to an existing issue | `{ "issueKey": "PROJ-123", "body": "Fixed in PR #45" }` |
+| `updateIssue` | Transition an issue to a new status via transition ID | `{ "issueKey": "PROJ-123", "transitionId": "31" }` |
+| `listProjects` | List all accessible Jira projects | `{}` |
 
 ### Confluence Tools
 
@@ -137,6 +141,7 @@ Open your AI editor and ask:
 |------|-------------|---------------|
 | `searchPages` | Search pages by keyword | `{ "query": "deployment guide" }` |
 | `getPage` | Get full content of a page by ID | `{ "pageId": "12345" }` |
+| `listSpaces` | List all accessible Confluence spaces | `{}` |
 
 ### Example Responses
 

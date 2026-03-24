@@ -106,6 +106,30 @@ export class ConfluenceClient {
     return mapPageDetail(response, this.baseUrl);
   }
 
+  async listSpaces(): Promise<any[]> {
+    logger.info("Confluence list spaces");
+    const allSpaces: any[] = [];
+    let start = 0;
+    const limit = 50;
+
+    while (true) {
+      const response = await this.requestWithRetry<any>(
+        "/rest/api/space",
+        { start, limit }
+      );
+
+      allSpaces.push(...response.results);
+      logger.info(`Fetched ${allSpaces.length} spaces so far`);
+
+      if (!response._links?.next || response.size < limit) {
+        break;
+      }
+      start += limit;
+    }
+
+    return allSpaces;
+  }
+
   private async requestWithRetry<T>(path: string, params: Record<string, unknown>): Promise<T> {
     let lastError: Error | null = null;
 

@@ -100,5 +100,127 @@ export function registerJiraTools(server: McpServer, config: Config): void {
     }
   });
 
-  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails");
+  // Tool 4: createIssue
+  server.registerTool("createIssue", {
+    description: "Create a new Jira issue (epic, story, task, bug, etc.) in a specific project. Use this when the user asks to create a bug, task, or ticket.",
+    inputSchema: {
+      projectKey: z.string().min(1).describe("The key of the Jira project, e.g., PROJ"),
+      summary: z.string().min(1).describe("The title or summary of the issue"),
+      description: z.string().describe("Detailed description of the issue"),
+      issueType: z.string().min(1).describe("The issue type name, e.g., 'Bug', 'Task', 'Story'"),
+    },
+  }, async ({ projectKey, summary, description, issueType }) => {
+    if (!client) return configError();
+    try {
+      logger.info(`createIssue called for project ${projectKey}`);
+      const result = await client.createIssue(projectKey, summary, description, issueType);
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({ success: true, issueKey: result.key, message: `Issue ${result.key} created successfully.` }, null, 2),
+        }],
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error(`createIssue failed: ${message}`);
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+        isError: true,
+      };
+    }
+  });
+
+  // Tool 5: addComment
+  server.registerTool("addComment", {
+    description: "Add a comment to an existing Jira issue. Use this when the user asks to reply to, update, or comment on a ticket.",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+      body: z.string().min(1).describe("The text content of the comment"),
+    },
+  }, async ({ issueKey, body }) => {
+    if (!client) return configError();
+    try {
+      logger.info(`addComment called for ${issueKey}`);
+      await client.addComment(issueKey, body);
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({ success: true, message: `Comment added successfully to ${issueKey}.` }, null, 2),
+        }],
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error(`addComment failed: ${message}`);
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+        isError: true,
+      };
+    }
+  });
+
+  // Tool 6: updateIssue (transitions)
+  server.registerTool("updateIssue", {
+    description: "Transition a Jira issue to a new status (e.g., move from 'Open' to 'In Progress' or 'Done'). Requires the transition ID.",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+      transitionId: z.string().min(1).describe("The numeric ID of the transition (you may need to look this up via Jira API separately or assume standard IDs if known)"),
+    },
+  }, async ({ issueKey, transitionId }) => {
+    if (!client) return configError();
+    try {
+      logger.info(`updateIssue called for ${issueKey} with transition ${transitionId}`);
+      await client.updateIssue(issueKey, transitionId);
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({ success: true, message: `Issue ${issueKey} transitioned successfully.` }, null, 2),
+        }],
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error(`updateIssue failed: ${message}`);
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+        isError: true,
+      };
+    }
+  });
+
+  // Tool 7: listProjects
+  server.registerTool("listProjects", {
+    description: "List all Jira projects accessible to the authenticated user. Useful for finding project keys to use in other commands.",
+    inputSchema: {},
+  }, async () => {
+    if (!client) return configError();
+    try {
+      logger.info("listProjects called");
+      const projects = await client.listProjects();
+
+      // Map to a cleaner format focusing on key and name
+      const simplifiedProjects = projects.map((p: any) => ({
+        key: p.key,
+        name: p.name,
+        id: p.id
+      }));
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({ projects: simplifiedProjects, total: simplifiedProjects.length }, null, 2),
+        }],
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error(`listProjects failed: ${message}`);
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+        isError: true,
+      };
+    }
+  });
+
+  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects");
 }

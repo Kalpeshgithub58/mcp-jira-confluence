@@ -87,6 +87,7 @@ export class JiraClient {
 
     while (true) {
       const response = await this.requestWithRetry<JiraSearchResponse>(
+        "GET",
         "/rest/api/2/search",
         { jql, startAt, maxResults, fields: "summary,status,priority,assignee,updated,issuetype,project" }
       );
@@ -106,18 +107,55 @@ export class JiraClient {
   async getIssue(issueKey: string): Promise<JiraIssueDetail> {
     logger.info("Jira get issue", { issueKey });
     const response = await this.requestWithRetry<JiraIssueRaw>(
+      "GET",
       `/rest/api/2/issue/${encodeURIComponent(issueKey)}`,
       { fields: "summary,status,priority,assignee,updated,description,issuetype,project,created,reporter" }
     );
     return mapIssueDetail(response);
   }
 
-  private async requestWithRetry<T>(path: string, params: Record<string, unknown>): Promise<T> {
+  async createIssue(projectKey: string, summary: string, description: string, issueType: string): Promise<{ key: string }> {
+    logger.info("Jira create issue", { projectKey, summary });
+    return this.requestWithRetry<{ key: string }>("POST", "/rest/api/2/issue", {
+      fields: {
+        project: { key: projectKey },
+        summary,
+        description,
+        issuetype: { name: issueType }
+      }
+    });
+  }
+
+  async addComment(issueKey: string, body: string): Promise<void> {
+    logger.info("Jira add comment", { issueKey });
+    await this.requestWithRetry("POST", `/rest/api/2/issue/${encodeURIComponent(issueKey)}/comment`, {
+      body
+    });
+  }
+
+  async updateIssue(issueKey: string, transitionId: string): Promise<void> {
+    logger.info("Jira transition issue", { issueKey, transitionId });
+    await this.requestWithRetry("POST", `/rest/api/2/issue/${encodeURIComponent(issueKey)}/transitions`, {
+      transition: { id: transitionId }
+    });
+  }
+
+  async listProjects(): Promise<any[]> {
+    logger.info("Jira list projects");
+    return this.requestWithRetry<any[]>("GET", "/rest/api/2/project");
+  }
+
+  private async requestWithRetry<T>(method: "GET" | "POST", path: string, dataOrParams?: any): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
-        const response = await this.client.get<T>(path, { params });
+        const config = {
+          method,
+          url: path,
+          ...(method === "GET" ? { params: dataOrParams } : { data: dataOrParams }),
+        };
+        const response = await this.client.request<T>(config);
         return response.data;
       } catch (err) {
         const axiosErr = err as AxiosError;

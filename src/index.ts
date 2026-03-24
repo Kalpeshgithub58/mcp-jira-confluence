@@ -238,7 +238,7 @@ async function main(): Promise<void> {
   // ===========================
   app.listen(config.port, () => {
     logger.info(`MCP server listening on http://0.0.0.0:${config.port}`);
-    logger.info("Tools: getMyTickets, searchJira, getIssueDetails, searchPages, getPage");
+    logger.info("Tools: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, searchPages, getPage, listSpaces");
     logger.info("Streamable HTTP: POST /mcp | Legacy SSE: GET /sse + POST /messages");
     logger.info("Health: GET /health");
   });

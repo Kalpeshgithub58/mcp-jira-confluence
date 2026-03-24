@@ -71,5 +71,38 @@ export function registerConfluenceTools(server: McpServer, config: Config): void
     }
   });
 
-  logger.info("Confluence tools registered: searchPages, getPage");
+  // Tool 3: listSpaces
+  server.registerTool("listSpaces", {
+    description: "List all Confluence spaces accessible to the authenticated user. Useful for finding space keys to use in other commands or browsing available documentation areas.",
+    inputSchema: {},
+  }, async () => {
+    if (!client) return configError();
+    try {
+      logger.info("listSpaces called");
+      const spaces = await client.listSpaces();
+
+      // Map to a cleaner format focusing on key and name
+      const simplifiedSpaces = spaces.map((s: any) => ({
+        key: s.key,
+        name: s.name,
+        type: s.type
+      }));
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({ spaces: simplifiedSpaces, total: simplifiedSpaces.length }, null, 2),
+        }],
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error(`listSpaces failed: ${message}`);
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+        isError: true,
+      };
+    }
+  });
+
+  logger.info("Confluence tools registered: searchPages, getPage, listSpaces");
 }
