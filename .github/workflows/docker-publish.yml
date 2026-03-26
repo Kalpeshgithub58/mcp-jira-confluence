@@ -24,3 +24,12 @@ jobs:
           context: .
           push: true
           tags: agentcraftai/mcp-jira-confluence:latest
+
+      - name: Update Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: agentcraftai/mcp-jira-confluence
+          short-description: "**A professional MCP server for Jira & Confluence integration with 12 powerful AI-ready tools.**"
+          readme-filepath: ./README.md
