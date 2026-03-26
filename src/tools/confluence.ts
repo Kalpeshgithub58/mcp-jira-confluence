@@ -104,5 +104,35 @@ export function registerConfluenceTools(server: McpServer, config: Config): void
     }
   });
 
-  logger.info("Confluence tools registered: searchPages, getPage, listSpaces");
+  // Tool 4: createPage
+  server.registerTool("createPage", {
+    description: "Create a new Confluence page in a specific space. Use this when the user asks to create a document, wiki page, or new content. Content should be in HTML format.",
+    inputSchema: {
+      spaceKey: z.string().min(1).describe("The key of the Confluence space, e.g., 'DOCS'"),
+      title: z.string().min(1).describe("The title of the new page"),
+      content: z.string().min(1).describe("The HTML/XHTML content of the page"),
+    },
+  }, async ({ spaceKey, title, content }) => {
+    if (!client) return configError();
+    try {
+      logger.info(`createPage called for space ${spaceKey} with title "${title}"`);
+      const pageId = await client.createPage(spaceKey, title, content);
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({ success: true, pageId, message: `Page "${title}" created successfully in space ${spaceKey}.` }, null, 2),
+        }],
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error(`createPage failed: ${message}`);
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+        isError: true,
+      };
+    }
+  });
+
+  logger.info("Confluence tools registered: searchPages, getPage, listSpaces, createPage");
 }

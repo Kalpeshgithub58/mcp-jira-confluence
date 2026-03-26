@@ -81,6 +81,7 @@ export class ConfluenceClient {
 
     while (true) {
       const response = await this.requestWithRetry<ConfluenceSearchResponse>(
+        "GET",
         "/rest/api/content/search",
         { cql: `type=page AND (title~"${query}" OR text~"${query}")`, start, limit, expand: "space" }
       );
@@ -100,10 +101,31 @@ export class ConfluenceClient {
   async getPage(pageId: string): Promise<ConfluencePageDetail> {
     logger.info("Confluence get page", { pageId });
     const response = await this.requestWithRetry<ConfluencePageRaw>(
+      "GET",
       `/rest/api/content/${encodeURIComponent(pageId)}`,
       { expand: "body.storage,version,space" }
     );
     return mapPageDetail(response, this.baseUrl);
+  }
+
+  async createPage(spaceKey: string, title: string, content: string): Promise<string> {
+    logger.info("Confluence create page", { spaceKey, title });
+    const response = await this.requestWithRetry<ConfluencePageRaw>(
+      "POST",
+      "/rest/api/content",
+      {
+        type: "page",
+        title,
+        space: { key: spaceKey },
+        body: {
+          storage: {
+            value: content,
+            representation: "storage"
+          }
+        }
+      }
+    );
+    return response.id;
   }
 
   async listSpaces(): Promise<any[]> {
@@ -114,6 +136,7 @@ export class ConfluenceClient {
 
     while (true) {
       const response = await this.requestWithRetry<any>(
+        "GET",
         "/rest/api/space",
         { start, limit }
       );
@@ -130,12 +153,17 @@ export class ConfluenceClient {
     return allSpaces;
   }
 
-  private async requestWithRetry<T>(path: string, params: Record<string, unknown>): Promise<T> {
+  private async requestWithRetry<T>(method: "GET" | "POST", path: string, dataOrParams?: any): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
-        const response = await this.client.get<T>(path, { params });
+        const config = {
+          method,
+          url: path,
+          ...(method === "GET" ? { params: dataOrParams } : { data: dataOrParams }),
+        };
+        const response = await this.client.request<T>(config);
         return response.data;
       } catch (err) {
         const axiosErr = err as AxiosError;
