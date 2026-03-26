@@ -133,6 +133,7 @@ Open your AI editor and ask:
 | `createIssue` | Create a new Jira issue (epic, story, task, bug) | `{ "projectKey": "PROJ", "summary": "Fix auth", "description": "...", "issueType": "Bug" }` |
 | `addComment` | Add a comment to an existing issue | `{ "issueKey": "PROJ-123", "body": "Fixed in PR #45" }` |
 | `updateIssue` | Transition an issue to a new status via transition ID | `{ "issueKey": "PROJ-123", "transitionId": "31" }` |
+| `editIssue` | Edit any combination of fields on an existing issue | `{ "issueKey": "PROJ-123", "summary": "New title", "priority": "High" }` |
 | `listProjects` | List all accessible Jira projects | `{}` |
 
 ### Confluence Tools

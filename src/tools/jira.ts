@@ -222,5 +222,49 @@ export function registerJiraTools(server: McpServer, config: Config): void {
     }
   });
 
-  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects");
+  // Tool 8: editIssue
+  server.registerTool("editIssue", {
+    description: "Edit an existing Jira issue. You can update any combination of: summary (title), description, assignee (username), or priority. Only the fields you provide will be changed — everything else stays the same.",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+      summary: z.string().optional().describe("New title/summary for the issue"),
+      description: z.string().optional().describe("New description for the issue"),
+      assignee: z.string().optional().describe("Username of the person to assign the ticket to"),
+      priority: z.string().optional().describe("New priority name, e.g., 'High', 'Medium', 'Low', 'Critical'"),
+    },
+  }, async ({ issueKey, summary, description, assignee, priority }) => {
+    if (!client) return configError();
+    try {
+      logger.info(`editIssue called for ${issueKey}`);
+
+      // Guard: at least one field must be provided
+      if (!summary && !description && !assignee && !priority) {
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify({ error: "No fields to update. Provide at least one of: summary, description, assignee, priority." }) }],
+          isError: true,
+        };
+      }
+
+      await client.editIssue(issueKey, { summary, description, assignee, priority });
+
+      // Fetch and return the updated issue so the AI can confirm the change
+      const updated = await client.getIssue(issueKey);
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({ success: true, message: `Issue ${issueKey} updated successfully.`, updatedIssue: updated }, null, 2),
+        }],
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error(`editIssue failed: ${message}`);
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+        isError: true,
+      };
+    }
+  });
+
+  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue");
 }

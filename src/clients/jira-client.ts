@@ -145,7 +145,29 @@ export class JiraClient {
     return this.requestWithRetry<any[]>("GET", "/rest/api/2/project");
   }
 
-  private async requestWithRetry<T>(method: "GET" | "POST", path: string, dataOrParams?: any): Promise<T> {
+  async editIssue(
+    issueKey: string,
+    fields: {
+      summary?: string;
+      description?: string;
+      assignee?: string;
+      priority?: string;
+    }
+  ): Promise<void> {
+    logger.info("Jira edit issue", { issueKey, fields: Object.keys(fields) });
+
+    // Build the fields object for PUT /rest/api/2/issue/{key}
+    // Only include fields that were actually provided
+    const body: Record<string, any> = { fields: {} };
+    if (fields.summary !== undefined) body.fields.summary = fields.summary;
+    if (fields.description !== undefined) body.fields.description = fields.description;
+    if (fields.assignee !== undefined) body.fields.assignee = { name: fields.assignee };
+    if (fields.priority !== undefined) body.fields.priority = { name: fields.priority };
+
+    await this.requestWithRetry<void>("PUT", `/rest/api/2/issue/${encodeURIComponent(issueKey)}`, body);
+  }
+
+  private async requestWithRetry<T>(method: "GET" | "POST" | "PUT", path: string, dataOrParams?: any): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
@@ -156,6 +178,7 @@ export class JiraClient {
           ...(method === "GET" ? { params: dataOrParams } : { data: dataOrParams }),
         };
         const response = await this.client.request<T>(config);
+        // PUT returns 204 No Content — response.data is undefined/empty, which is correct
         return response.data;
       } catch (err) {
         const axiosErr = err as AxiosError;
