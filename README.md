@@ -143,7 +143,7 @@ Open your AI editor and ask:
 | `searchPages` | Search pages by keyword | `{ "query": "deployment guide" }` |
 | `getPage` | Get full content of a page by ID | `{ "pageId": "12345" }` |
 | `listSpaces` | List all accessible Confluence spaces | `{}` |
-| `createPage` | Create a new Confluence page | `{ "spaceKey": "DOCS", "title": "New Guide", "content": "<h1>Hello</h1>" }` |
+| `createPage` | Create a new Confluence page | `{ "spaceKey": "DOCS", "title": "New Title", "content": "<h1>HTML Body Here</h1>" }` |
 
 ### Example Responses
 
