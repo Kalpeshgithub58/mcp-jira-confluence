@@ -144,6 +144,7 @@ Open your AI editor and ask:
 | `getPage` | Get full content of a page by ID | `{ "pageId": "12345" }` |
 | `listSpaces` | List all accessible Confluence spaces | `{}` |
 | `createPage` | Create a new Confluence page | `{ "spaceKey": "DOCS", "title": "New Title", "content": "<h1>HTML Body Here</h1>" }` |
+| `editPage` | Edit an existing Confluence page (title, content, or both) | `{ "pageId": "12345", "title": "Updated Title" }` |
 
 ### Example Responses
 

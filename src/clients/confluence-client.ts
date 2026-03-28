@@ -128,6 +128,46 @@ export class ConfluenceClient {
     return response.id;
   }
 
+  async editPage(
+    pageId: string,
+    fields: { title?: string; content?: string }
+  ): Promise<ConfluencePageDetail> {
+    logger.info("Confluence edit page", { pageId, fields: Object.keys(fields) });
+
+    // Step 1: GET the current page to obtain the version number and existing content
+    const current = await this.requestWithRetry<ConfluencePageRaw>(
+      "GET",
+      `/rest/api/content/${encodeURIComponent(pageId)}`,
+      { expand: "body.storage,version,space" }
+    );
+
+    const currentVersion = current.version?.number ?? 0;
+    const currentTitle = current.title;
+    const currentBody = current.body?.storage?.value ?? "";
+
+    // Step 2: PUT with version + 1, merging only the fields that changed
+    const updatedPage = await this.requestWithRetry<ConfluencePageRaw>(
+      "PUT",
+      `/rest/api/content/${encodeURIComponent(pageId)}`,
+      {
+        id: pageId,
+        type: "page",
+        title: fields.title ?? currentTitle,
+        body: {
+          storage: {
+            value: fields.content ?? currentBody,
+            representation: "storage",
+          },
+        },
+        version: {
+          number: currentVersion + 1,
+        },
+      }
+    );
+
+    return mapPageDetail(updatedPage, this.baseUrl);
+  }
+
   async listSpaces(): Promise<any[]> {
     logger.info("Confluence list spaces");
     const allSpaces: any[] = [];
@@ -153,7 +193,7 @@ export class ConfluenceClient {
     return allSpaces;
   }
 
-  private async requestWithRetry<T>(method: "GET" | "POST", path: string, dataOrParams?: any): Promise<T> {
+  private async requestWithRetry<T>(method: "GET" | "POST" | "PUT", path: string, dataOrParams?: any): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {

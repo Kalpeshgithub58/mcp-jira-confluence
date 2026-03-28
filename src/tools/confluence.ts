@@ -134,5 +134,44 @@ export function registerConfluenceTools(server: McpServer, config: Config): void
     }
   });
 
-  logger.info("Confluence tools registered: searchPages, getPage, listSpaces, createPage");
+  // Tool 5: editPage
+  server.registerTool("editPage", {
+    description: "Edit an existing Confluence page. You can update the title, the content (HTML), or both. Only the fields you provide will be changed — everything else stays the same. The version number is handled automatically.",
+    inputSchema: {
+      pageId: z.string().min(1).describe("The ID of the Confluence page to edit"),
+      title: z.string().optional().describe("New title for the page"),
+      content: z.string().optional().describe("New HTML/XHTML content for the page body"),
+    },
+  }, async ({ pageId, title, content }) => {
+    if (!client) return configError();
+    try {
+      logger.info(`editPage called for page ${pageId}`);
+
+      // Guard: at least one field must be provided
+      if (!title && !content) {
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify({ error: "No fields to update. Provide at least one of: title, content." }) }],
+          isError: true,
+        };
+      }
+
+      const updatedPage = await client.editPage(pageId, { title, content });
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({ success: true, message: `Page "${updatedPage.title}" (v${updatedPage.version}) updated successfully.`, updatedPage }, null, 2),
+        }],
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error(`editPage failed: ${message}`);
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+        isError: true,
+      };
+    }
+  });
+
+  logger.info("Confluence tools registered: searchPages, getPage, listSpaces, createPage, editPage");
 }
