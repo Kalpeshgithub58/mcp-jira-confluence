@@ -32,7 +32,7 @@ COPY --from=builder /app/dist ./dist
 
 USER appuser
 
-EXPOSE 3000
+EXPOSE 8000
 
 ENV NODE_ENV=production
 

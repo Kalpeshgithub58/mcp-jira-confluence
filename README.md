@@ -72,10 +72,11 @@ You can find the official image on [Docker Hub](https://hub.docker.com/r/agentcr
 # Pull the latest image
 docker pull agentcraftai/mcp-jira-confluence
 
-# Run the container
+# Run the container (auto-starts on Docker Desktop boot)
 docker run -d \
   --name mcp-jira-confluence \
-  -p 3000:3000 \
+  --restart unless-stopped \
+  -p 8000:8000 \
   -e JIRA_BASE_URL=https://jira.yourcompany.com \
   -e JIRA_PAT=your_jira_token \
   -e CONFLUENCE_BASE_URL=https://confluence.yourcompany.com \
@@ -83,10 +84,12 @@ docker run -d \
   agentcraftai/mcp-jira-confluence
 ```
 
+> **🔁 Auto-Start:** The `--restart unless-stopped` flag means this container will automatically start whenever Docker Desktop launches. You only need to run this command **once**.
+
 ### Step 2: Verify
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:8000/health
 ```
 
 Expected response:
@@ -103,7 +106,7 @@ Add this to your editor's MCP settings (see [Editor Configuration](#-editor-conf
   "servers": [
     {
       "name": "jira-confluence",
-      "url": "http://localhost:3000/mcp"
+      "url": "http://localhost:8000/mcp"
     }
   ]
 }
@@ -196,7 +199,7 @@ Add to your MCP server configuration:
   "servers": [
     {
       "name": "jira-confluence",
-      "url": "http://localhost:3000/mcp"
+      "url": "http://localhost:8000/mcp"
     }
   ]
 }
@@ -210,7 +213,7 @@ Add to your MCP settings:
   "servers": [
     {
       "name": "jira-confluence",
-      "url": "http://localhost:3000/mcp"
+      "url": "http://localhost:8000/mcp"
     }
   ]
 }
@@ -223,7 +226,7 @@ Windsurf uses a **different config format** — edit `%USERPROFILE%\.codeium\win
 {
   "mcpServers": {
     "jira-confluence": {
-      "serverUrl": "http://localhost:3000/sse"
+      "serverUrl": "http://localhost:8000/sse"
     }
   }
 }
@@ -255,13 +258,13 @@ Windsurf uses a **different config format** — edit `%USERPROFILE%\.codeium\win
 | `JIRA_PAT` | For Jira tools | Jira Personal Access Token |
 | `CONFLUENCE_BASE_URL` | For Confluence tools | Your Confluence instance URL (e.g., `https://confluence.yourcompany.com`) |
 | `CONFLUENCE_PAT` | For Confluence tools | Confluence Personal Access Token |
-| `PORT` | No | Server port (default: `3000`) |
+| `PORT` | No | Server port (default: `8000`) |
 
 ### Usage Examples
 
 **Jira only:**
 ```bash
-docker run -d -p 3000:3000 \
+docker run -d -p 8000:8000 \
   -e JIRA_BASE_URL=https://jira.yourcompany.com \
   -e JIRA_PAT=your_jira_token \
   agentcraftai/mcp-jira-confluence
@@ -269,7 +272,7 @@ docker run -d -p 3000:3000 \
 
 **Confluence only:**
 ```bash
-docker run -d -p 3000:3000 \
+docker run -d -p 8000:8000 \
   -e CONFLUENCE_BASE_URL=https://confluence.yourcompany.com \
   -e CONFLUENCE_PAT=your_confluence_token \
   agentcraftai/mcp-jira-confluence
@@ -277,7 +280,7 @@ docker run -d -p 3000:3000 \
 
 **Both:**
 ```bash
-docker run -d -p 3000:3000 \
+docker run -d -p 8000:8000 \
   -e JIRA_BASE_URL=https://jira.yourcompany.com \
   -e JIRA_PAT=your_jira_token \
   -e CONFLUENCE_BASE_URL=https://confluence.yourcompany.com \
@@ -403,7 +406,7 @@ docker build -t mcp-jira-confluence .
 | `Confluence authentication failed` | Invalid or expired PAT | Generate a new PAT in Confluence |
 | `Jira/Confluence not configured` | Missing env vars | Pass all required env vars via `-e` flags or `.env` file |
 | `Connection refused` to Jira/Confluence | Network issue | Verify the container can reach your Jira/Confluence URLs |
-| Editor can't connect to MCP | Wrong URL | Use `http://localhost:3000/mcp` (not just `localhost:3000`) |
+| Editor can't connect to MCP | Wrong URL | Use `http://localhost:8000/mcp` (not just `localhost:8000`) |
 
 ### Check Container Logs
 

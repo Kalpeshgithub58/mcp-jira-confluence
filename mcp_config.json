@@ -1,8 +1,7 @@
 {
-  "servers": [
-    {
-      "name": "jira-confluence",
-      "url": "http://localhost:3000/mcp"
+  "mcpServers": {
+    "jira-confluence": {
+      "url": "http://localhost:8000/mcp"
     }
-  ]
+  }
 }

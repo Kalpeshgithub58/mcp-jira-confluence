@@ -4,7 +4,7 @@ services:
     image: agentcraftai/mcp-jira-confluence
     container_name: mcp-jira-confluence
     ports:
-      - "3000:3000"
+      - "8000:8000"
     environment:
       - JIRA_BASE_URL=${JIRA_BASE_URL}
       - JIRA_PAT=${JIRA_PAT}
@@ -12,7 +12,7 @@ services:
       - CONFLUENCE_PAT=${CONFLUENCE_PAT}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
       interval: 30s
       timeout: 5s
       retries: 3

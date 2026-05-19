@@ -44,7 +44,7 @@ export function loadConfig(): Config {
     jiraPat: vars.JIRA_PAT || "",
     confluenceBaseUrl: (vars.CONFLUENCE_BASE_URL || "").replace(/\/+$/, ""),
     confluencePat: vars.CONFLUENCE_PAT || "",
-    port: parseInt(process.env.PORT || "3000", 10),
+    port: parseInt(process.env.PORT || "8000", 10),
   };
 }
 
