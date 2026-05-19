@@ -2,6 +2,14 @@
   "name": "mcp-jira-confluence",
   "version": "1.0.0",
   "description": "MCP server for self-hosted Jira and Confluence integration",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kalpeshgithub58/mcp-jira-confluence.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kalpeshgithub58/mcp-jira-confluence/issues"
+  },
+  "homepage": "https://github.com/Kalpeshgithub58/mcp-jira-confluence#readme",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

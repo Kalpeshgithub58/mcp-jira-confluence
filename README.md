@@ -4,6 +4,7 @@
 
 **Connect your AI-powered editor to self-hosted Jira and Confluence**
 
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/Kalpeshgithub58/mcp-jira-confluence)
 [![Docker](https://img.shields.io/badge/Docker-Hub-blue?logo=docker)](https://hub.docker.com/r/agentcraftai/mcp-jira-confluence)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green)](https://modelcontextprotocol.io/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js)](https://nodejs.org/)
@@ -12,6 +13,8 @@
 Query Jira tickets and Confluence pages directly from your AI editor — no browser tab switching required.
 
 Works with **Antigravity**, **Windsurf**, **VS Code**, and any MCP-compatible client.
+
+**Source Code & Tracking:** [https://github.com/Kalpeshgithub58/mcp-jira-confluence](https://github.com/Kalpeshgithub58/mcp-jira-confluence)
 
 </div>
 

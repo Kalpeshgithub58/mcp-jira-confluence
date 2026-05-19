@@ -15,7 +15,7 @@ RUN npx tsc
 FROM node:18-alpine
 
 LABEL org.opencontainers.image.title="MCP Server for Jira & Confluence" \
-      org.opencontainers.image.description="Official MCP server providing 12 powerful tools for Jira (Create/Edit/Search) and Confluence (Search/Create) in self-hosted environments." \
+      org.opencontainers.image.description="Official MCP server providing 12 powerful tools for Jira (Create/Edit/Search) and Confluence (Search/Create) in self-hosted environments. Track updates at https://github.com/Kalpeshgithub58/mcp-jira-confluence" \
       org.opencontainers.image.source="https://github.com/Kalpeshgithub58/mcp-jira-confluence" \
       org.opencontainers.image.authors="AgentCraftAI" \
       com.agentcraftai.category="AI Agent Tools / Developer Productivity"
