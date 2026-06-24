@@ -236,6 +236,26 @@ export class JiraClient {
     return this.requestWithRetry<any[]>("GET", "/rest/api/2/user/search", { username: query, query });
   }
 
+  async addWorklog(issueKey: string, timeSpent: string, comment?: string): Promise<void> {
+    logger.info("Jira add worklog", { issueKey, timeSpent });
+    await this.requestWithRetry("POST", `/rest/api/2/issue/${encodeURIComponent(issueKey)}/worklog`, {
+      timeSpent,
+      ...(comment ? { comment } : {})
+    });
+  }
+
+  async deleteIssue(issueKey: string): Promise<void> {
+    logger.info("Jira delete issue", { issueKey });
+    await this.requestWithRetry("DELETE", `/rest/api/2/issue/${encodeURIComponent(issueKey)}`);
+  }
+
+  async getFilters(): Promise<any[]> {
+    logger.info("Jira get favourite filters");
+    // Retrieve the user's favourite (starred) filters
+    const response = await this.requestWithRetry<any[]>("GET", "/rest/api/2/filter/favourite");
+    return response || [];
+  }
+
   private async requestWithRetry<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, dataOrParams?: any): Promise<T> {
     let lastError: Error | null = null;
 

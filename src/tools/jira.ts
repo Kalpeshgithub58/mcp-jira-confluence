@@ -441,5 +441,53 @@ export function registerJiraTools(server: McpServer, config: Config): void {
     }
   });
 
-  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue, getComments, getTransitions, getIssueHistory, getSubtasks, getLinkTypes, linkIssues, deleteComment, getIssueAttachments, listBoards, getSprints, searchUsers");
+  // Tool 20: addWorklog
+  server.registerTool("addWorklog", {
+    description: "Log time against a specific Jira issue.",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+      timeSpent: z.string().min(1).describe("Time spent, e.g., '2h', '30m', '1d'"),
+      comment: z.string().optional().describe("Optional description of the work done"),
+    },
+  }, async ({ issueKey, timeSpent, comment }) => {
+    if (!client) return configError();
+    try {
+      await client.addWorklog(issueKey, timeSpent, comment);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ success: true, message: `Successfully logged ${timeSpent} to ${issueKey}.` }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 21: deleteIssue
+  server.registerTool("deleteIssue", {
+    description: "Permanently delete a Jira issue. Use with caution!",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+    },
+  }, async ({ issueKey }) => {
+    if (!client) return configError();
+    try {
+      await client.deleteIssue(issueKey);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ success: true, message: `Issue ${issueKey} was permanently deleted.` }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 22: getFilters
+  server.registerTool("getFilters", {
+    description: "Retrieve a list of the user's favorite/starred filters in Jira.",
+    inputSchema: {},
+  }, async () => {
+    if (!client) return configError();
+    try {
+      const filters = await client.getFilters();
+      return { content: [{ type: "text" as const, text: JSON.stringify({ filters, total: filters.length }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue, getComments, getTransitions, getIssueHistory, getSubtasks, getLinkTypes, linkIssues, deleteComment, getIssueAttachments, listBoards, getSprints, searchUsers, addWorklog, deleteIssue, getFilters");
 }

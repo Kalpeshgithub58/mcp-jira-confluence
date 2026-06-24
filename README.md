@@ -176,6 +176,9 @@ Open your AI editor and ask:
 | `listBoards` | List all Agile boards to find a boardId | `{}` |
 | `getSprints` | Get sprint information for a specific Agile board | `{ "boardId": 12 }` |
 | `searchUsers` | Search for Jira users by name, username, or email | `{ "query": "John Doe" }` |
+| `addWorklog` | Log time against a specific Jira issue | `{ "issueKey": "PROJ-123", "timeSpent": "2h", "comment": "Writing tests" }` |
+| `deleteIssue` | Permanently delete a Jira issue | `{ "issueKey": "PROJ-123" }` |
+| `getFilters` | Retrieve your favorite/starred Jira filters | `{}` |
 
 ### Confluence Tools
 
