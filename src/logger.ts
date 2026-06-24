@@ -24,13 +24,8 @@ function log(level: LogLevel, message: string, meta?: Record<string, unknown>): 
   };
   const output = JSON.stringify(entry);
 
-  if (level === "error") {
-    console.error(output);
-  } else if (level === "warn") {
-    console.warn(output);
-  } else {
-    console.log(output);
-  }
+  // All logs must go to stderr to prevent corrupting MCP JSON-RPC over stdout
+  console.error(output);
 }
 
 export const logger = {

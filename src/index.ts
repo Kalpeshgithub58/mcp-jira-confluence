@@ -1,6 +1,8 @@
+#!/usr/bin/env node
 import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { InMemoryEventStore } from "@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
@@ -236,12 +238,21 @@ async function main(): Promise<void> {
   // ===========================
   //  Start server
   // ===========================
-  app.listen(config.port, () => {
-    logger.info(`MCP server listening on http://0.0.0.0:${config.port}`);
-    logger.info("Tools: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue, searchPages, getPage, listSpaces, createPage, editPage");
-    logger.info("Streamable HTTP: POST /mcp | Legacy SSE: GET /sse + POST /messages");
-    logger.info("Health: GET /health");
-  });
+  const args = process.argv.slice(2);
+  if (args.includes("stdio") || args.includes("--stdio")) {
+    logger.info("Starting MCP server in STDIO mode");
+    const server = createServer();
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    logger.info("MCP server running over STDIO");
+  } else {
+    app.listen(config.port, () => {
+      logger.info(`MCP server listening on http://0.0.0.0:${config.port}`);
+      logger.info("Tools: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue, searchPages, getPage, listSpaces, createPage, editPage");
+      logger.info("Streamable HTTP: POST /mcp | Legacy SSE: GET /sse + POST /messages");
+      logger.info("Health: GET /health");
+    });
+  }
 
   // Graceful shutdown
   process.on("SIGINT", async () => {

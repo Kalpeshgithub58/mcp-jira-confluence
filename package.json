@@ -1,5 +1,5 @@
 {
-  "name": "mcp-jira-confluence",
+  "name": "agentcraftai-mcp-jira-confluence",
   "version": "1.0.0",
   "description": "MCP server for self-hosted Jira and Confluence integration",
   "repository": {
@@ -11,6 +11,9 @@
   },
   "homepage": "https://github.com/Kalpeshgithub58/mcp-jira-confluence#readme",
   "main": "dist/index.js",
+  "bin": {
+    "agentcraftai-mcp-jira-confluence": "dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",

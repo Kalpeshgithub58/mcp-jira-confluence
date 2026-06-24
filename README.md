@@ -4,6 +4,7 @@
 
 **Connect your AI-powered editor to self-hosted Jira and Confluence**
 
+[![NPM Version](https://img.shields.io/npm/v/agentcraftai-mcp-jira-confluence?logo=npm)](https://www.npmjs.com/package/agentcraftai-mcp-jira-confluence)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/Kalpeshgithub58/mcp-jira-confluence)
 [![Docker](https://img.shields.io/badge/Docker-Hub-blue?logo=docker)](https://hub.docker.com/r/agentcraftai/mcp-jira-confluence)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green)](https://modelcontextprotocol.io/)
@@ -66,6 +67,29 @@ You (in editor)              MCP Server                Jira / Confluence
 - A Personal Access Token (PAT) from your Confluence instance
 
 > **How to get a PAT:** Go to your Jira/Confluence → Profile → Personal Access Tokens → Create Token
+
+### Option A: Run via NPX (Recommended for Cursor/Windsurf/Claude)
+
+You don't need to install anything if you have Node.js. Just configure your AI editor to run the server directly using `npx`:
+
+```json
+{
+  "mcpServers": {
+    "jira-confluence": {
+      "command": "npx",
+      "args": ["-y", "agentcraftai-mcp-jira-confluence", "stdio"],
+      "env": {
+        "JIRA_BASE_URL": "https://jira.yourcompany.com",
+        "JIRA_PAT": "your_jira_token",
+        "CONFLUENCE_BASE_URL": "https://confluence.yourcompany.com",
+        "CONFLUENCE_PAT": "your_confluence_token"
+      }
+    }
+  }
+}
+```
+
+### Option B: Run via Docker (Recommended for Remote/Background Servers)
 
 ### Step 1: Pull and Run
 
@@ -194,7 +218,7 @@ Open your AI editor and ask:
 
 ## 🔌 Editor Configuration
 
-### Antigravity
+### Antigravity & VS Code (HTTP Mode)
 
 Add to your MCP server configuration:
 ```json
@@ -208,21 +232,7 @@ Add to your MCP server configuration:
 }
 ```
 
-### VS Code (with MCP extension)
-
-Add to your MCP settings:
-```json
-{
-  "servers": [
-    {
-      "name": "jira-confluence",
-      "url": "http://localhost:8000/mcp"
-    }
-  ]
-}
-```
-
-### Windsurf
+### Windsurf (HTTP / SSE Mode)
 
 Windsurf uses a **different config format** — edit `%USERPROFILE%\.codeium\windsurf\mcp_config.json`:
 ```json
@@ -236,6 +246,28 @@ Windsurf uses a **different config format** — edit `%USERPROFILE%\.codeium\win
 ```
 
 > **⚠️ Important:** Windsurf uses `mcpServers` (object), `serverUrl`, and the `/sse` endpoint. Other editors use `servers` (array), `url`, and the `/mcp` endpoint. Always use `http://` — NOT `https://`.
+
+### Using NPX (STDIO Mode) - No Docker Required
+
+If you prefer to run the server via Node.js instead of Docker, you can use `npx` to run it directly over STDIO. This is fully supported by Cursor, Claude Desktop, and Windsurf.
+
+Example for `mcp_config.json`:
+```json
+{
+  "mcpServers": {
+    "jira-confluence": {
+      "command": "npx",
+      "args": ["-y", "agentcraftai-mcp-jira-confluence", "stdio"],
+      "env": {
+        "JIRA_BASE_URL": "https://jira.yourcompany.com",
+        "JIRA_PAT": "your_jira_token",
+        "CONFLUENCE_BASE_URL": "https://confluence.yourcompany.com",
+        "CONFLUENCE_PAT": "your_confluence_token"
+      }
+    }
+  }
+}
+```
 
 ---
 
