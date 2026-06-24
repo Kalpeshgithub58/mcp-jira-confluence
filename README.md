@@ -165,6 +165,16 @@ Open your AI editor and ask:
 | `updateIssue` | Transition an issue to a new status via transition ID | `{ "issueKey": "PROJ-123", "transitionId": "31" }` |
 | `editIssue` | Edit any combination of fields on an existing issue | `{ "issueKey": "PROJ-123", "summary": "New title", "priority": "High" }` |
 | `listProjects` | List all accessible Jira projects | `{}` |
+| `getComments` | Retrieve the comment history for a specific issue | `{ "issueKey": "PROJ-123" }` |
+| `getTransitions` | List available transition IDs for a specific issue | `{ "issueKey": "PROJ-123" }` |
+| `getIssueHistory` | See status, assignment, and field changes over time | `{ "issueKey": "PROJ-123" }` |
+| `getSubtasks` | Get child tickets of an epic or parent issue | `{ "issueKey": "PROJ-123" }` |
+| `getLinkTypes` | Get all available issue link types in Jira (e.g., 'Blocks') | `{}` |
+| `linkIssues` | Link two tickets together using a specific link type | `{ "inwardIssue": "A", "outwardIssue": "B", "linkType": "Blocks" }` |
+| `deleteComment` | Delete a comment from a Jira issue | `{ "issueKey": "PROJ-123", "commentId": "10001" }` |
+| `getIssueAttachments` | Retrieve a list of attachments for a Jira issue | `{ "issueKey": "PROJ-123" }` |
+| `listBoards` | List all Agile boards to find a boardId | `{}` |
+| `getSprints` | Get sprint information for a specific Agile board | `{ "boardId": 12 }` |
 
 ### Confluence Tools
 
@@ -175,6 +185,8 @@ Open your AI editor and ask:
 | `listSpaces` | List all accessible Confluence spaces | `{}` |
 | `createPage` | Create a new Confluence page | `{ "spaceKey": "DOCS", "title": "New Title", "content": "<h1>HTML Body Here</h1>" }` |
 | `editPage` | Edit an existing Confluence page (title, content, or both) | `{ "pageId": "12345", "title": "Updated Title" }` |
+| `deletePage` | Delete a Confluence page by its ID | `{ "pageId": "12345" }` |
+| `getPageAttachments` | Retrieve a list of attachments for a Confluence page | `{ "pageId": "12345" }` |
 
 ### Example Responses
 
