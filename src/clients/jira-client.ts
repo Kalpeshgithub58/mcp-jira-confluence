@@ -229,6 +229,13 @@ export class JiraClient {
     return response.values || [];
   }
 
+  async searchUsers(query: string): Promise<any[]> {
+    logger.info("Jira search users", { query });
+    // In Jira Server/DC, the param is usually 'username'. In Cloud, it's 'query'.
+    // Passing both covers both environments gracefully.
+    return this.requestWithRetry<any[]>("GET", "/rest/api/2/user/search", { username: query, query });
+  }
+
   private async requestWithRetry<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, dataOrParams?: any): Promise<T> {
     let lastError: Error | null = null;
 

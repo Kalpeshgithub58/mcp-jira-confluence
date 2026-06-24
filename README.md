@@ -175,6 +175,7 @@ Open your AI editor and ask:
 | `getIssueAttachments` | Retrieve a list of attachments for a Jira issue | `{ "issueKey": "PROJ-123" }` |
 | `listBoards` | List all Agile boards to find a boardId | `{}` |
 | `getSprints` | Get sprint information for a specific Agile board | `{ "boardId": 12 }` |
+| `searchUsers` | Search for Jira users by name, username, or email | `{ "query": "John Doe" }` |
 
 ### Confluence Tools
 

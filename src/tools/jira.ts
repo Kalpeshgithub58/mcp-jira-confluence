@@ -425,5 +425,21 @@ export function registerJiraTools(server: McpServer, config: Config): void {
     }
   });
 
-  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue, getComments, getTransitions, getIssueHistory, getSubtasks, getLinkTypes, linkIssues, deleteComment, getIssueAttachments, listBoards, getSprints");
+  // Tool 19: searchUsers
+  server.registerTool("searchUsers", {
+    description: "Search for Jira users by name, username, or email. Useful for finding the exact username or accountId to use when assigning issues.",
+    inputSchema: {
+      query: z.string().min(1).describe("The name, username, or email to search for"),
+    },
+  }, async ({ query }) => {
+    if (!client) return configError();
+    try {
+      const users = await client.searchUsers(query);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ users, total: users.length }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue, getComments, getTransitions, getIssueHistory, getSubtasks, getLinkTypes, linkIssues, deleteComment, getIssueAttachments, listBoards, getSprints, searchUsers");
 }
