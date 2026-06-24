@@ -266,5 +266,164 @@ export function registerJiraTools(server: McpServer, config: Config): void {
     }
   });
 
-  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue");
+  // Tool 9: getComments
+  server.registerTool("getComments", {
+    description: "Retrieve the comment history for a specific Jira issue.",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+    },
+  }, async ({ issueKey }) => {
+    if (!client) return configError();
+    try {
+      const comments = await client.getComments(issueKey);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ comments, total: comments.length }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 10: getTransitions
+  server.registerTool("getTransitions", {
+    description: "List available transition IDs (status changes) for a specific Jira issue.",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+    },
+  }, async ({ issueKey }) => {
+    if (!client) return configError();
+    try {
+      const transitions = await client.getTransitions(issueKey);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ transitions }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 11: getIssueHistory
+  server.registerTool("getIssueHistory", {
+    description: "See status, assignment, and field changes over time for an issue (changelog).",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+    },
+  }, async ({ issueKey }) => {
+    if (!client) return configError();
+    try {
+      const history = await client.getIssueHistory(issueKey);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ history }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 12: getSubtasks
+  server.registerTool("getSubtasks", {
+    description: "Get child tickets of an epic or parent issue.",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira parent or epic issue key, e.g., PROJ-123"),
+    },
+  }, async ({ issueKey }) => {
+    if (!client) return configError();
+    try {
+      const subtasks = await client.getSubtasks(issueKey);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ subtasks, total: subtasks.length }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 13: getLinkTypes
+  server.registerTool("getLinkTypes", {
+    description: "Get all available issue link types in Jira (e.g., 'Blocks', 'Relates'). Used to find valid linkType names for linkIssues.",
+    inputSchema: {},
+  }, async () => {
+    if (!client) return configError();
+    try {
+      const linkTypes = await client.getLinkTypes();
+      return { content: [{ type: "text" as const, text: JSON.stringify({ linkTypes }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 14: linkIssues
+  server.registerTool("linkIssues", {
+    description: "Link two tickets together (e.g., A blocks B, or A relates to B).",
+    inputSchema: {
+      inwardIssue: z.string().min(1).describe("Key of the inward issue"),
+      outwardIssue: z.string().min(1).describe("Key of the outward issue"),
+      linkType: z.string().min(1).describe("Name of the link type (use getLinkTypes to find valid names)"),
+    },
+  }, async ({ inwardIssue, outwardIssue, linkType }) => {
+    if (!client) return configError();
+    try {
+      await client.linkIssues(inwardIssue, outwardIssue, linkType);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ success: true, message: `Successfully linked ${inwardIssue} and ${outwardIssue} with type ${linkType}.` }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 15: deleteComment
+  server.registerTool("deleteComment", {
+    description: "Delete a comment from a Jira issue.",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+      commentId: z.string().min(1).describe("ID of the comment to delete"),
+    },
+  }, async ({ issueKey, commentId }) => {
+    if (!client) return configError();
+    try {
+      await client.deleteComment(issueKey, commentId);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ success: true, message: `Comment ${commentId} deleted from ${issueKey}.` }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 16: getIssueAttachments
+  server.registerTool("getIssueAttachments", {
+    description: "Retrieve a list of attachments for a specific Jira issue.",
+    inputSchema: {
+      issueKey: z.string().min(1).describe("Jira issue key, e.g., PROJ-123"),
+    },
+  }, async ({ issueKey }) => {
+    if (!client) return configError();
+    try {
+      const attachments = await client.getIssueAttachments(issueKey);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ attachments, total: attachments.length }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 17: listBoards
+  server.registerTool("listBoards", {
+    description: "List all Agile boards. Useful for finding a boardId to use with getSprints.",
+    inputSchema: {},
+  }, async () => {
+    if (!client) return configError();
+    try {
+      const boards = await client.listBoards();
+      return { content: [{ type: "text" as const, text: JSON.stringify({ boards, total: boards.length }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 18: getSprints
+  server.registerTool("getSprints", {
+    description: "Get sprint information (active, future, or closed sprints) for a specific Agile board.",
+    inputSchema: {
+      boardId: z.number().int().describe("The ID of the Agile board (use listBoards to find this)"),
+    },
+  }, async ({ boardId }) => {
+    if (!client) return configError();
+    try {
+      const sprints = await client.getSprints(boardId);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ sprints, total: sprints.length }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue, getComments, getTransitions, getIssueHistory, getSubtasks, getLinkTypes, linkIssues, deleteComment, getIssueAttachments, listBoards, getSprints");
 }

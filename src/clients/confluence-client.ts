@@ -193,7 +193,18 @@ export class ConfluenceClient {
     return allSpaces;
   }
 
-  private async requestWithRetry<T>(method: "GET" | "POST" | "PUT", path: string, dataOrParams?: any): Promise<T> {
+  async deletePage(pageId: string): Promise<void> {
+    logger.info("Confluence delete page", { pageId });
+    await this.requestWithRetry("DELETE", `/rest/api/content/${encodeURIComponent(pageId)}`);
+  }
+
+  async getPageAttachments(pageId: string): Promise<any[]> {
+    logger.info("Confluence get page attachments", { pageId });
+    const response = await this.requestWithRetry<any>("GET", `/rest/api/content/${encodeURIComponent(pageId)}/child/attachment`);
+    return response.results || [];
+  }
+
+  private async requestWithRetry<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, dataOrParams?: any): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {

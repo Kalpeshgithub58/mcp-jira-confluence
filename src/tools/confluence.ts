@@ -173,5 +173,37 @@ export function registerConfluenceTools(server: McpServer, config: Config): void
     }
   });
 
-  logger.info("Confluence tools registered: searchPages, getPage, listSpaces, createPage, editPage");
+  // Tool 6: deletePage
+  server.registerTool("deletePage", {
+    description: "Delete a Confluence page by its ID.",
+    inputSchema: {
+      pageId: z.string().min(1).describe("The ID of the Confluence page to delete"),
+    },
+  }, async ({ pageId }) => {
+    if (!client) return configError();
+    try {
+      await client.deletePage(pageId);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ success: true, message: `Page ${pageId} deleted successfully.` }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  // Tool 7: getPageAttachments
+  server.registerTool("getPageAttachments", {
+    description: "Retrieve a list of attachments for a specific Confluence page.",
+    inputSchema: {
+      pageId: z.string().min(1).describe("The ID of the Confluence page"),
+    },
+  }, async ({ pageId }) => {
+    if (!client) return configError();
+    try {
+      const attachments = await client.getPageAttachments(pageId);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ attachments, total: attachments.length }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  logger.info("Confluence tools registered: searchPages, getPage, listSpaces, createPage, editPage, deletePage, getPageAttachments");
 }

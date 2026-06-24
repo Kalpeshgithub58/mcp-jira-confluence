@@ -167,7 +167,69 @@ export class JiraClient {
     await this.requestWithRetry<void>("PUT", `/rest/api/2/issue/${encodeURIComponent(issueKey)}`, body);
   }
 
-  private async requestWithRetry<T>(method: "GET" | "POST" | "PUT", path: string, dataOrParams?: any): Promise<T> {
+  async getComments(issueKey: string): Promise<any[]> {
+    logger.info("Jira get comments", { issueKey });
+    const response = await this.requestWithRetry<any>("GET", `/rest/api/2/issue/${encodeURIComponent(issueKey)}/comment`);
+    return response.comments || [];
+  }
+
+  async getTransitions(issueKey: string): Promise<any[]> {
+    logger.info("Jira get transitions", { issueKey });
+    const response = await this.requestWithRetry<any>("GET", `/rest/api/2/issue/${encodeURIComponent(issueKey)}/transitions`);
+    return response.transitions || [];
+  }
+
+  async getIssueHistory(issueKey: string): Promise<any[]> {
+    logger.info("Jira get issue history", { issueKey });
+    const response = await this.requestWithRetry<any>("GET", `/rest/api/2/issue/${encodeURIComponent(issueKey)}`, { expand: "changelog" });
+    return response.changelog?.histories || [];
+  }
+
+  async getSubtasks(issueKey: string): Promise<JiraIssue[]> {
+    logger.info("Jira get subtasks", { issueKey });
+    const jql = `parent = "${issueKey}" OR "Epic Link" = "${issueKey}"`;
+    return this.searchIssues(jql);
+  }
+
+  async getLinkTypes(): Promise<any[]> {
+    logger.info("Jira get link types");
+    const response = await this.requestWithRetry<any>("GET", "/rest/api/2/issueLinkType");
+    return response.issueLinkTypes || [];
+  }
+
+  async linkIssues(inwardIssue: string, outwardIssue: string, linkType: string): Promise<void> {
+    logger.info("Jira link issues", { inwardIssue, outwardIssue, linkType });
+    await this.requestWithRetry("POST", "/rest/api/2/issueLink", {
+      type: { name: linkType },
+      inwardIssue: { key: inwardIssue },
+      outwardIssue: { key: outwardIssue }
+    });
+  }
+
+  async deleteComment(issueKey: string, commentId: string): Promise<void> {
+    logger.info("Jira delete comment", { issueKey, commentId });
+    await this.requestWithRetry("DELETE", `/rest/api/2/issue/${encodeURIComponent(issueKey)}/comment/${encodeURIComponent(commentId)}`);
+  }
+
+  async getIssueAttachments(issueKey: string): Promise<any[]> {
+    logger.info("Jira get attachments", { issueKey });
+    const response = await this.requestWithRetry<any>("GET", `/rest/api/2/issue/${encodeURIComponent(issueKey)}`, { fields: "attachment" });
+    return response.fields?.attachment || [];
+  }
+
+  async listBoards(): Promise<any[]> {
+    logger.info("Jira list Agile boards");
+    const response = await this.requestWithRetry<any>("GET", "/rest/agile/1.0/board");
+    return response.values || [];
+  }
+
+  async getSprints(boardId: number): Promise<any[]> {
+    logger.info("Jira get sprints", { boardId });
+    const response = await this.requestWithRetry<any>("GET", `/rest/agile/1.0/board/${boardId}/sprint`);
+    return response.values || [];
+  }
+
+  private async requestWithRetry<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, dataOrParams?: any): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
