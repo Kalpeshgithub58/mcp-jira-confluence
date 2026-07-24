@@ -114,14 +114,15 @@ export class JiraClient {
     return mapIssueDetail(response);
   }
 
-  async createIssue(projectKey: string, summary: string, description: string, issueType: string): Promise<{ key: string }> {
+  async createIssue(projectKey: string, summary: string, description: string, issueType: string, extraFields?: Record<string, any>): Promise<{ key: string }> {
     logger.info("Jira create issue", { projectKey, summary });
     return this.requestWithRetry<{ key: string }>("POST", "/rest/api/2/issue", {
       fields: {
         project: { key: projectKey },
         summary,
         description,
-        issuetype: { name: issueType }
+        issuetype: { name: issueType },
+        ...(extraFields ?? {})
       }
     });
   }
@@ -256,6 +257,16 @@ export class JiraClient {
     return response || [];
   }
 
+  async getCreateMeta(projectKey: string, issueTypeName?: string): Promise<any> {
+    logger.info("Jira get create meta", { projectKey, issueTypeName });
+    const params: Record<string, any> = {
+      projectKeys: projectKey,
+      expand: "projects.issuetypes.fields"
+    };
+    if (issueTypeName) params.issuetypeNames = issueTypeName;
+    return this.requestWithRetry<any>("GET", "/rest/api/2/issue/createmeta", params);
+  }
+
   private async requestWithRetry<T>(method: "GET" | "POST" | "PUT" | "DELETE", path: string, dataOrParams?: any): Promise<T> {
     let lastError: Error | null = null;
 
@@ -290,7 +301,25 @@ export class JiraClient {
           throw new Error(`Jira connection failed: ${axiosErr.code}`);
         }
 
-        throw new Error(`Jira API error: ${status ?? "unknown"} - ${axiosErr.message}`);
+        // Try to parse detailed Jira error body (e.g. { errorMessages: [...], errors: { field: "msg" } })
+        let detailedMessage = axiosErr.message;
+        const responseData = axiosErr.response?.data as any;
+        if (responseData && typeof responseData === 'object') {
+          const msgs: string[] = [];
+          if (Array.isArray(responseData.errorMessages) && responseData.errorMessages.length > 0) {
+            msgs.push(...responseData.errorMessages);
+          }
+          if (responseData.errors && typeof responseData.errors === 'object') {
+            for (const [field, err] of Object.entries(responseData.errors)) {
+              msgs.push(`Field '${field}': ${err}`);
+            }
+          }
+          if (msgs.length > 0) {
+            detailedMessage = msgs.join(" | ");
+          }
+        }
+
+        throw new Error(`Jira API error: ${status ?? "unknown"} - ${detailedMessage}`);
       }
     }
 

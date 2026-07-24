@@ -102,18 +102,19 @@ export function registerJiraTools(server: McpServer, config: Config): void {
 
   // Tool 4: createIssue
   server.registerTool("createIssue", {
-    description: "Create a new Jira issue (epic, story, task, bug, etc.) in a specific project. Use this when the user asks to create a bug, task, or ticket.",
+    description: "Create a new Jira issue (epic, story, task, bug, etc.) in a specific project. Use getCreateMeta first if you are creating an issue type (like a Defect) that might require mandatory custom fields.",
     inputSchema: {
       projectKey: z.string().min(1).describe("The key of the Jira project, e.g., PROJ"),
       summary: z.string().min(1).describe("The title or summary of the issue"),
       description: z.string().describe("Detailed description of the issue"),
       issueType: z.string().min(1).describe("The issue type name, e.g., 'Bug', 'Task', 'Story'"),
+      fields: z.record(z.string(), z.any()).optional().describe("Optional extra fields (e.g., custom fields, components, severity). Requires exact Jira field IDs."),
     },
-  }, async ({ projectKey, summary, description, issueType }) => {
+  }, async ({ projectKey, summary, description, issueType, fields }) => {
     if (!client) return configError();
     try {
       logger.info(`createIssue called for project ${projectKey}`);
-      const result = await client.createIssue(projectKey, summary, description, issueType);
+      const result = await client.createIssue(projectKey, summary, description, issueType, fields);
 
       return {
         content: [{
@@ -489,5 +490,22 @@ export function registerJiraTools(server: McpServer, config: Config): void {
     }
   });
 
-  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue, getComments, getTransitions, getIssueHistory, getSubtasks, getLinkTypes, linkIssues, deleteComment, getIssueAttachments, listBoards, getSprints, searchUsers, addWorklog, deleteIssue, getFilters");
+  // Tool 23: getCreateMeta
+  server.registerTool("getCreateMeta", {
+    description: "Retrieve the creation metadata for a project. Essential for discovering mandatory fields (like custom fields, components, or severity) required to create specific issue types (like Defects).",
+    inputSchema: {
+      projectKey: z.string().min(1).describe("Jira project key, e.g., PROJ"),
+      issueTypeName: z.string().optional().describe("Filter by specific issue type name, e.g., 'Defect'"),
+    },
+  }, async ({ projectKey, issueTypeName }) => {
+    if (!client) return configError();
+    try {
+      const meta = await client.getCreateMeta(projectKey, issueTypeName);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ meta }, null, 2) }] };
+    } catch (err) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: err instanceof Error ? err.message : String(err) }) }], isError: true };
+    }
+  });
+
+  logger.info("Jira tools registered: getMyTickets, searchJira, getIssueDetails, createIssue, addComment, updateIssue, listProjects, editIssue, getComments, getTransitions, getIssueHistory, getSubtasks, getLinkTypes, linkIssues, deleteComment, getIssueAttachments, listBoards, getSprints, searchUsers, addWorklog, deleteIssue, getFilters, getCreateMeta");
 }
